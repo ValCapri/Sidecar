@@ -3,43 +3,15 @@
 // Under the MIT License; see LICENSE file for details.
 
 #import "CRLMethodLogFormatter.h"
+#if __has_include("CocoaLumberjack.h")
+#import <CocoaLumberjack/CocoaLumberjack.h>
+#else
 #import <CocoaLumberjack/DDLog.h>
+#endif
 #import <libkern/OSAtomic.h>
 
 static NSString * const CRLMethodLogFormatterCalendarKey = @"CRLMethodLogFormatterCalendarKey";
 static const NSCalendarUnit CRLMethodLogFormatterCalendarUnitFlags = NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
-
-
-NS_INLINE const char *CRLLogFlagToCString(int logFlag)
-{
-    switch(logFlag) {
-        case LOG_FLAG_ERROR: return "ERR";
-        case LOG_FLAG_WARN: return "WRN";
-        case LOG_FLAG_INFO: return "INF";
-        case LOG_FLAG_DEBUG: return "DBG";
-        case LOG_FLAG_VERBOSE: return "VRB";
-
-        default: return "";
-    }
-}
-
-NS_INLINE const char *CRLPointerToLastPathComponent(const char *path)
-{
-    if(!path) return "";
-
-    const char *p = path, *lastSlash = NULL;
-    while (*p != '\0')
-    {
-        if (*p == '/') lastSlash = p;
-        p++;
-    }
-
-    // If we didn't find a slash, or the slash is the final character in the string,
-    // just give back the whole thing.
-    if(!lastSlash || *(lastSlash + 1) == '\0') return path;
-
-    return lastSlash + 1;
-}
 
 
 @interface CRLMethodLogFormatter () {
@@ -80,12 +52,12 @@ NS_INLINE const char *CRLPointerToLastPathComponent(const char *path)
     // Time calculation is ripped from DDTTYLogger
 
     NSDateComponents *components = [[self threadsafeCalendar] components:CRLMethodLogFormatterCalendarUnitFlags
-                                                                fromDate:logMessage->timestamp];
+                                                                fromDate:logMessage.timestamp];
 
-    NSTimeInterval epoch = [logMessage->timestamp timeIntervalSinceReferenceDate];
+    NSTimeInterval epoch = [logMessage.timestamp timeIntervalSinceReferenceDate];
     int milliseconds = (int)((epoch - floor(epoch)) * 1000);
 
-    NSString *formattedMsg = [NSString stringWithFormat:@"%04ld-%02ld-%02ld %02ld:%02ld:%02ld:%03d [%s] %s:%d (%s): %@",
+    NSString *formattedMsg = [NSString stringWithFormat:@"%04ld-%02ld-%02ld %02ld:%02ld:%02ld:%03d [%@] %@:%lu (%@): %@",
                               (long)components.year,
                               (long)components.month,
                               (long)components.day,
@@ -93,11 +65,11 @@ NS_INLINE const char *CRLPointerToLastPathComponent(const char *path)
                               (long)components.minute,
                               (long)components.second,
                               milliseconds,
-                              CRLLogFlagToCString(logMessage->logFlag),
-                              CRLPointerToLastPathComponent(logMessage->file),
-                              logMessage->lineNumber,
-                              logMessage->function ?: "",
-                              logMessage->logMsg];
+                              [self CRLLogFlagToString:logMessage.flag],
+                              [logMessage.file lastPathComponent],
+                              (unsigned long)logMessage.line,
+                              logMessage.function,
+                              logMessage.message];
 
     return formattedMsg;
 }
@@ -110,6 +82,19 @@ NS_INLINE const char *CRLPointerToLastPathComponent(const char *path)
 -(void)willRemoveFromLogger:(id<DDLogger> __unused)logger
 {
     OSAtomicDecrement32(&atomicLoggerCount);
+}
+
+-(NSString*)CRLLogFlagToString:(DDLogFlag)logFlag
+{
+    switch(logFlag) {
+        case LOG_FLAG_ERROR: return @"ERR";
+        case LOG_FLAG_WARN: return @"WRN";
+        case LOG_FLAG_INFO: return @"INF";
+        case LOG_FLAG_DEBUG: return @"DBG";
+        case LOG_FLAG_VERBOSE: return @"VRB";
+            
+        default: return @"";
+    }
 }
 
 @end

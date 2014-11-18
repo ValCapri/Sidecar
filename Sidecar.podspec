@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.platform     = :ios, '7.0'
   s.ios.deployment_target = '7.0'
   s.requires_arc = true
-  s.dependency 'CocoaLumberjack/Core', '~>1.9.0'
+  s.dependency 'CocoaLumberjack/Core'
   
   # Defining LOG_LEVEL_DEF makes sure we don't stomp on the application's
   # log level, which is usually called 'ddLogLevel'.
