@@ -3,11 +3,7 @@
 // Under the MIT License; see LICENSE file for details.
 
 #import "CRLMethodLogFormatter.h"
-#if __has_include("CocoaLumberjack.h")
 #import <CocoaLumberjack/CocoaLumberjack.h>
-#else
-#import <CocoaLumberjack/DDLog.h>
-#endif
 #import <libkern/OSAtomic.h>
 
 static NSString * const CRLMethodLogFormatterCalendarKey = @"CRLMethodLogFormatterCalendarKey";
@@ -87,11 +83,11 @@ static const NSCalendarUnit CRLMethodLogFormatterCalendarUnitFlags = NSCalendarU
 -(NSString*)CRLLogFlagToString:(DDLogFlag)logFlag
 {
     switch(logFlag) {
-        case LOG_FLAG_ERROR: return @"ERR";
-        case LOG_FLAG_WARN: return @"WRN";
-        case LOG_FLAG_INFO: return @"INF";
-        case LOG_FLAG_DEBUG: return @"DBG";
-        case LOG_FLAG_VERBOSE: return @"VRB";
+        case DDLogFlagError: return @"ERR";
+        case DDLogFlagWarning: return @"WRN";
+        case DDLogFlagInfo: return @"INF";
+        case DDLogFlagDebug: return @"DBG";
+        case DDLogFlagVerbose: return @"VRB";
             
         default: return @"";
     }

@@ -1,6 +1,6 @@
 source 'https://github.com/CocoaPods/Specs.git'
 
-pod 'CocoaLumberjack/Core'
+pod 'CocoaLumberjack', '~> 2.0'
 
 target 'Specs', :exclusive => true do
   platform :ios, '7.0'
